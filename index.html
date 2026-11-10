@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#176b52">
+<meta name="description" content="Personal calorie, weight, water and steps tracker.">
+<link rel="manifest" href="manifest.webmanifest">
+<title>My Calorie & Fitness Tracker</title>
+<style>
+:root{--green:#176b52;--mint:#e8f4ef;--ink:#17231e;--muted:#66756e;--line:#e3ebe6;--bg:#f5f8f6;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:var(--green);color:white;padding:24px 18px 28px;border-radius:0 0 24px 24px}
+header h1{font-size:23px;margin:0 0 5px}header p{margin:0;color:#d9eee5;font-size:13px}
+main{max-width:680px;margin:auto;padding:14px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 0 13px;box-shadow:0 2px 9px #173d2b08}
+h2{font-size:17px;margin:0 0 13px}.muted{color:var(--muted);font-size:13px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:var(--mint);border-radius:14px;padding:13px}.stat strong{display:block;font-size:25px}.stat span{font-size:12px;color:var(--muted)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0}
+input,select{width:100%;padding:12px;border:1px solid #ccd9d1;border-radius:11px;font:inherit;background:white;color:var(--ink)}
+button{border:0;border-radius:11px;padding:12px 15px;background:var(--green);color:white;font:600 14px system-ui;cursor:pointer}
+button.secondary{background:var(--mint);color:var(--green)}button.danger{background:#fff0ef;color:#a4322c}
+form{display:grid;gap:9px}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.progress{height:10px;background:#e7eee9;border-radius:20px;overflow:hidden}.progress div{height:100%;background:var(--green);width:0}
+table{width:100%;border-collapse:collapse;font-size:14px}td{padding:8px 3px;border-bottom:1px solid var(--line)}td:last-child{text-align:right;white-space:nowrap}
+.foodname{font-weight:600}.meal{font-size:12px;color:var(--muted)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chips button{min-width:58px}
+.notice{background:#fff8e7;border-radius:12px;padding:12px;font-size:13px;color:#69552b;line-height:1.45}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:12px 20px 28px}
+@media(min-width:560px){main{padding:20px}.card{padding:19px}}
+</style>
+</head>
+<body>
+<header><h1>My Calorie & Fitness Tracker ❤️</h1><p>Your food diary, weight, water and steps — all in one place.</p></header>
+<main>
+<section class="card">
+ <div class="row"><h2>Today's dashboard</h2><span class="muted" id="today"></span></div>
+ <div class="stats">
+  <div class="stat"><strong id="eaten">830</strong><span>Calories eaten (kcal)</span></div>
+  <div class="stat"><strong id="remaining">—</strong><span>Remaining from guide</span></div>
+  <div class="stat"><strong id="waterStat">0</strong><span>Glasses of water</span></div>
+  <div class="stat"><strong id="stepsStat">0</strong><span>Steps today</span></div>
+ </div>
+ <p class="muted" style="margin:14px 0 7px">Daily calorie guide (editable)</p>
+ <div class="row"><input id="target" type="number" min="1200" max="4000" step="50" value="2400" style="max-width:130px"><span class="muted">kcal — provisional only</span></div>
+ <div class="progress"><div id="calProgress"></div></div>
+</section>
+
+<section class="card">
+ <h2>Food diary</h2>
+ <table><tbody id="foodRows"></tbody></table>
+ <p class="row"><strong>Total</strong><strong id="foodTotal">830 kcal</strong></p>
+ <form id="foodForm">
+  <div class="twocol"><select id="meal"><option>Breakfast</option><option>Lunch</option><option>Snacks</option><option>Dinner</option></select><input id="foodName" placeholder="Food name" required></div>
+  <input id="foodCalories" type="number" min="1" placeholder="Estimated calories (kcal)" required>
+  <button>Add food</button>
+ </form>
+ <p class="muted">Calories are estimates; portion size, oil and recipe affect the total.</p>
+</section>
+
+<section class="card">
+ <h2>Water tracker</h2>
+ <div class="row"><strong><span id="waterCount">0</span> glasses</strong><span class="muted">Use your thirst and clinician's advice as your guide.</span></div>
+ <div class="chips"><button id="waterPlus">+ 1 glass</button><button class="secondary" id="waterMinus">− 1 glass</button></div>
+</section>
+
+<section class="card">
+ <h2>Steps tracker</h2>
+ <label class="muted" for="steps">Enter today's steps</label>
+ <input id="steps" type="number" min="0" step="1" value="0">
+</section>
+
+<section class="card">
+ <h2>Weight tracker</h2>
+ <div class="twocol">
+  <div><label class="muted" for="weight">Current weight (kg)</label><input id="weight" type="number" min="20" max="300" step=".1" value="100"></div>
+  <div><label class="muted" for="goal">Target weight (kg)</label><input id="goal" type="number" min="20" max="300" step=".1" value="80"></div>
+ </div>
+ <button id="saveWeight" style="margin-top:10px">Save today's weight</button>
+ <div id="weightHistory" class="muted" style="margin-top:12px">No weight entries saved yet.</div>
+</section>
+
+<section class="card">
+ <h2>Your profile</h2>
+ <p class="muted">Food preference: Mixed (vegetarian + non-vegetarian)<br>Breastfeeding: Exclusively breastfeeding (as shared)<br>Height: 5 ft 2 in<br>Starting weight: 100 kg<br>Target weight: 80 kg</p>
+ <div class="notice">Because you are breastfeeding, avoid crash diets or aggressive calorie limits. The 2,400 kcal figure is only a temporary tracking placeholder, not a medical prescription. Your needs depend on milk production, activity, recovery and health; discuss a suitable target with your clinician or dietitian. Seek advice if milk supply drops or you feel weak or dizzy.</div>
+</section>
+<section class="card">
+ <div class="row"><h2>Backup your data</h2><button class="secondary" id="export">Export diary</button></div>
+ <p class="muted">Your entries are saved on this device's browser. Export a backup before clearing browser data or changing phones.</p>
+</section>
+</main>
+<footer>My Calorie & Fitness Tracker · Personal use</footer>
+<script>
+const $=id=>document.getElementById(id);
+const key='my-calorie-fitness-v1';
+const today=new Date().toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+$('today').textContent=today;
+const initial=[
+ {meal:'Breakfast',name:'2 medium chapatis',calories:220},
+ {meal:'Breakfast',name:'1 bowl vegetable palya',calories:125},
+ {meal:'Breakfast',name:'2 pieces alfaham',calories:240},
+ {meal:'Breakfast',name:'1 cup tea with sugar',calories:70},
+ {meal:'Breakfast',name:'1 small bowl chitranna',calories:175}
+];
+let state;
+try{state=JSON.parse(localStorage.getItem(key))||null}catch(e){state=null}
+if(!state) state={date:new Date().toISOString().slice(0,10),foods:initial,water:0,steps:0,weight:100,goal:80,target:2400,history:[]};
+if(state.date!==new Date().toISOString().slice(0,10)){state.date=new Date().toISOString().slice(0,10);state.foods=[];state.water=0;state.steps=0}
+function save(){localStorage.setItem(key,JSON.stringify(state));render()}
+function total(){return state.foods.reduce((a,f)=>a+Number(f.calories||0),0)}
+function render(){
+ $('eaten').textContent=total();$('foodTotal').textContent=total()+' kcal';
+ $('target').value=state.target;$('goal').value=state.goal;$('weight').value=state.weight;
+ $('remaining').textContent=Math.max(0,state.target-total());
+ $('calProgress').style.width=Math.min(100,total()/Math.max(1,state.target)*100)+'%';
+ $('waterStat').textContent=state.water;$('waterCount').textContent=state.water;
+ $('stepsStat').textContent=Number(state.steps).toLocaleString();$('steps').value=state.steps;
+ $('foodRows').innerHTML=state.foods.map((f,i)=>`<tr><td><span class="foodname">${escapeHtml(f.name)}</span><br><span class="meal">${escapeHtml(f.meal)}</span></td><td>${Number(f.calories)} kcal<br><button class="danger" data-del="${i}" style="padding:5px 8px;margin-top:4px">Remove</button></td></tr>`).join('')||'<tr><td colspan="2" class="muted">No food logged today yet.</td></tr>';
+ $('weightHistory').innerHTML=state.history.length?state.history.slice(-7).reverse().map(x=>`${escapeHtml(x.date)}: <strong>${x.weight} kg</strong>`).join('<br>'):'No weight entries saved yet.';
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('foodForm').addEventListener('submit',e=>{e.preventDefault();state.foods.push({meal:$('meal').value,name:$('foodName').value.trim(),calories:Number($('foodCalories').value)});$('foodName').value='';$('foodCalories').value='';save()});
+$('foodRows').addEventListener('click',e=>{let i=e.target.dataset.del;if(i!==undefined){state.foods.splice(Number(i),1);save()}});
+$('waterPlus').onclick=()=>{state.water++;save()};$('waterMinus').onclick=()=>{state.water=Math.max(0,state.water-1);save()};
+$('steps').onchange=()=>{state.steps=Math.max(0,Number($('steps').value)||0);save()};
+$('target').onchange=()=>{state.target=Math.max(1200,Number($('target').value)||2400);save()};
+$('goal').onchange=()=>{state.goal=Number($('goal').value)||80;save()};
+$('saveWeight').onclick=()=>{state.weight=Number($('weight').value)||state.weight;state.history.push({date:today,weight:state.weight});save()};
+$('export').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='calorie-tracker-backup.json';a.click();URL.revokeObjectURL(a.href)};
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+render();
+</script>
+</body></html>
